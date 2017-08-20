@@ -2,6 +2,20 @@
 
 ## Usage
 
+First of all you need to add dependency:
+
+```
+repositories {
+    jcenter()
+    maven { url "https://jitpack.io" }
+}
+dependencies {
+    compile 'com.github.satahippy:mailru-cloud-client:0.1.6'
+}
+```
+
+Then you can use library:
+
 ```java
 Cloud cloud = Cloud.Factory.instance();
 cloud.login("you@mail.ru", "your-password");

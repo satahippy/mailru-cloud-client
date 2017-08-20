@@ -1,7 +1,7 @@
 import org.gradle.api.tasks.bundling.Jar
 
 group = "com.github.satahippy"
-version = "0.1.5.RELEASE"
+version = "0.1.6"
 
 buildscript {
     extra["kotlinVersion"] = "1.1.4"
