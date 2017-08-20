@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.bundling.Jar
+
 group = "com.github.satahippy"
 version = "0.1.0.RELEASE"
 
@@ -16,6 +18,8 @@ buildscript {
 
 apply {
     plugin("kotlin")
+    plugin("publishing")
+    plugin("maven-publish")
 }
 
 configure<JavaPluginConvention> {
@@ -34,4 +38,25 @@ dependencies {
     compile("com.squareup.retrofit2:converter-scalars:${extra["retrofitVersion"]}")
 
     testCompile("junit:junit:${extra["junitVersion"]}")
+}
+
+val sourceSets = the<JavaPluginConvention>().sourceSets
+val sourcesJar = task<Jar>("sourcesJar") {
+    dependsOn("classes")
+
+    from(sourceSets.getByName("main").allSource)
+    classifier = "sources"
+}
+
+configure<PublishingExtension>() {
+    publications {
+        create<MavenPublication>("publication") {
+            from(components.getByName("java"))
+            artifact(sourcesJar)
+
+            groupId = group as String
+            artifactId = name
+            version = version
+        }
+    }
 }
