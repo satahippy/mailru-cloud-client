@@ -1,7 +1,7 @@
 import org.gradle.api.tasks.bundling.Jar
 
 group = "com.github.satahippy"
-version = "0.1.3.RELEASE"
+version = "0.1.4.RELEASE"
 
 buildscript {
     extra["kotlinVersion"] = "1.1.4"
@@ -19,7 +19,6 @@ buildscript {
 apply {
     plugin("kotlin")
     plugin("publishing")
-    plugin("maven")
     plugin("maven-publish")
 }
 
