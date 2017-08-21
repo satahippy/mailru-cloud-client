@@ -36,10 +36,3 @@ System.out.println(cloud.removeFile("/test_folder").execute().body());
 ## Tests
 
 Before tests running you need to copy `src/test/resources/config.properties.dist` to `config.properties` and specify your settings.
-
-## Release
-
-We're using Sonatype for releasing.
-
-In order to make this work you need to specify some gradle properties in `~/.gradle/gradle.properties`.
-You can find example of this file in resources.
