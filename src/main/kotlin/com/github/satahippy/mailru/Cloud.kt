@@ -59,7 +59,7 @@ class Cloud(inner: CloudApi) : CloudApi by inner {
     }
 
     private fun searchOnLoginPage(parameter: String, html: String): String? {
-        val matcher = Pattern.compile(""""$parameter":"(.*?)"""").matcher(html)
+        val matcher = Pattern.compile(""""$parameter":\s*"(.*?)"""").matcher(html)
         if (!matcher.find()) {
             return null
         }
