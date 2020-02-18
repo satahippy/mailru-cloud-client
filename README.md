@@ -42,3 +42,9 @@ Before tests running you need to copy `src/test/resources/config.properties.dist
 ## Release
 
 We use JitPack for releases.
+So all you need to do is increase version in build.gradle.kts and create a new tag:
+
+```
+git tag -a <version> -m "<version>"
+git push --follow-tags
+```
