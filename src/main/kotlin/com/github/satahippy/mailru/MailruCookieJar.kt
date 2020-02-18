@@ -18,4 +18,8 @@ class MailruCookieJar : CookieJar {
             cookies.addAll(cookiesFromResponse)
         }
     }
+
+    fun getActToken(): String? {
+        return cookies.find { it.name() == "act" }?.value()
+    }
 }

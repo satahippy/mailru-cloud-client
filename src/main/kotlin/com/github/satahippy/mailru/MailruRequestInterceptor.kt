@@ -13,30 +13,31 @@ class MailruRequestInterceptor : Interceptor {
 
     lateinit var build: String
 
-    lateinit var user: String
+    lateinit var email: String
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
         var modifiedRequest = originalRequest.newBuilder()
 
         modifiedRequest = modifiedRequest
-                .header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17")
+                .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 YaBrowser/19.12.3.332 (beta) Yowser/2.5 Safari/537.36")
         if (this.logined) {
+            modifiedRequest
+                    .header("X-CSRF-Token", csrf)
             modifiedRequest = modifiedRequest.url(
                     originalRequest.url().newBuilder()
-                            .let{
+                            .let {
                                 if (originalRequest.url().encodedPath().contains("upload")) {
                                     it
-                                        .addQueryParameter("cloud_domain", "2")
-                                        .addQueryParameter("x-email", user)
+                                            .addQueryParameter("cloud_domain", "2")
+                                            .addQueryParameter("x-email", email)
                                 } else {
                                     it
-                                        .addQueryParameter("api", "2")
-                                        .addQueryParameter("token", csrf)
-                                        .addQueryParameter("x-page-id", xPageId)
-                                        .addQueryParameter("build", build)
-                                        .addQueryParameter("email", user)
-                                        .addQueryParameter("x-email", user)
+                                            .addQueryParameter("api", "2")
+                                            .addQueryParameter("x-page-id", xPageId)
+                                            .addQueryParameter("build", build)
+                                            .addQueryParameter("email", email)
+                                            .addQueryParameter("x-email", email)
                                 }
                             }
                             .build()

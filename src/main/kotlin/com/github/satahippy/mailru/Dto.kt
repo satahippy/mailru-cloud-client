@@ -8,12 +8,15 @@ data class MailruResponse<T>(
 )
 
 data class InternalLoginRequest(
-        var page: String,
-        var FailPage: String,
-        var Domain: String,
         var Login: String,
         var Password: String,
-        var new_auth_form: Int
+        var act_token: String,
+        var page: String,
+        var Domain: String,
+        var FromAccount: String,
+        var new_auth_form: Int,
+        var saveauth: Int,
+        var lang: String
 ) : FormUrlEncodedRequest
 
 data class FolderOrFile(

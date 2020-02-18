@@ -11,7 +11,7 @@ import retrofit2.http.*
 import java.util.regex.Pattern
 import javax.xml.bind.DatatypeConverter
 
-class Cloud(inner: CloudApi) : CloudApi by inner {
+class Cloud(inner: CloudApi, val cookieJar: MailruCookieJar) : CloudApi by inner {
 
     private lateinit var requestInterceptor: MailruRequestInterceptor
 
@@ -20,9 +20,10 @@ class Cloud(inner: CloudApi) : CloudApi by inner {
     companion object Factory {
         fun instance(): Cloud {
             val requestInterceptor = MailruRequestInterceptor()
+            val cookieJar = MailruCookieJar()
 
             val client = OkHttpClient.Builder()
-                    .cookieJar(MailruCookieJar())
+                    .cookieJar(cookieJar)
                     .addInterceptor(requestInterceptor)
                     .build()
 
@@ -34,27 +35,39 @@ class Cloud(inner: CloudApi) : CloudApi by inner {
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
 
-            val instance = Cloud(retrofit.create(CloudApi::class.java))
+            val instance = Cloud(retrofit.create(CloudApi::class.java), cookieJar)
             instance.requestInterceptor = requestInterceptor
             return instance
         }
     }
 
     fun login(username: String, password: String) {
+        // изначальный запрос нужен чтобы получить act_token
+        init().execute()
+        val actToken = cookieJar.getActToken()
+                ?: throw MailruException("Act token is not found in cookies")
+
         val html = internalLogin(InternalLoginRequest(
-                page = "https://cloud.mail.ru/?from=promo",
-                FailPage = "",
-                Domain = "mail.ru",
                 Login = username,
                 Password = password,
-                new_auth_form = 1
+                act_token = actToken,
+                page = "https://cloud.mail.ru/?authid=k6sc8dts.pe&from=login&from-page=promo&from-promo=blue-2018",
+                Domain = "mail.ru",
+                FromAccount = "opener=account&twoSteps=1",
+                new_auth_form = 1,
+                saveauth = 1,
+                lang = "ru_RU"
         )).execute().body() ?: throw MailruException("Can't receive login page")
 
-        requestInterceptor.csrf = searchOnLoginPage("csrf", html) ?: throw MailruException("Can't extract csrf from login page")
-        requestInterceptor.xPageId = searchOnLoginPage("x-page-id", html) ?: throw MailruException("Can't extract x-page-id from login page")
-        requestInterceptor.build = searchOnLoginPage("BUILD", html) ?: throw MailruException("Can't extract BUILD from login page")
-        uploadUrl = searchUploadUrlOnLoginPage(html) ?: throw MailruException("Can't extract upload url from login page")
-        requestInterceptor.user = username
+        requestInterceptor.csrf = searchOnLoginPage("csrf", html)
+                ?: throw MailruException("Can't extract csrf from login page")
+        requestInterceptor.xPageId = searchOnLoginPage("x-page-id", html)
+                ?: throw MailruException("Can't extract x-page-id from login page")
+        requestInterceptor.build = searchOnLoginPage("BUILD", html)
+                ?: throw MailruException("Can't extract BUILD from login page")
+        uploadUrl = searchUploadUrlOnLoginPage(html)
+                ?: throw MailruException("Can't extract upload url from login page")
+        requestInterceptor.email = username + "@mail.ru"
         requestInterceptor.logined = true
     }
 
@@ -93,7 +106,11 @@ class Cloud(inner: CloudApi) : CloudApi by inner {
 }
 
 interface CloudApi {
-    @POST("http://auth.mail.ru/cgi-bin/auth?lang=ru_RU&from=authpopup")
+
+    @GET("https://account.mail.ru/login/")
+    fun init(): Call<String>
+
+    @POST("https://auth.mail.ru/cgi-bin/auth")
     fun internalLogin(@Body request: InternalLoginRequest): Call<String>
 
     @PUT
