@@ -19,20 +19,30 @@ data class InternalLoginRequest(
         var lang: String
 ) : FormUrlEncodedRequest
 
+data class Sort(
+    var type: String,
+    var order: String
+)
+
+enum class FileType {
+    file,
+    folder
+}
+
 data class FolderOrFile(
-        var count: FolderCount,
+        var count: FolderCount?,
         var name: String,
         var home: String,
-        var size: Long,
-        var kind: String,
-        var type: String,
-        var tree: String,
-        var mtime: Int,
-        var rev: Int,
-        var grev: Int,
-        var virus_scan: String,
-        var hash: String,
-        var list: List<FolderOrFile>
+        var size: Long?,
+        var kind: FileType,
+        var type: FileType,
+        var tree: String?,
+        var mtime: Int?,
+        var rev: Int?,
+        var grev: Int?,
+        var virus_scan: String?,
+        var hash: String?,
+        var list: List<FolderOrFile>?
 )
 
 data class FolderCount(

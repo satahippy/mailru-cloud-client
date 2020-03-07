@@ -1,12 +1,15 @@
 package com.github.satahippy.mailru
 
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
-import org.junit.Assert.*
 
 class CloudTest {
 
     private lateinit var cloud: Cloud
+
+    private val preExistingFile = "/test_file"
+    private val preExistingFileContent = "test_file_content"
 
     @Before
     fun init() {
@@ -15,54 +18,75 @@ class CloudTest {
     }
 
     @Test
-    fun loginSuccess() {
+    fun login_Success() {
         cloud = Cloud.instance()
         cloud.login(Settings.username(), Settings.password())
     }
 
     @Test(expected = MailruException::class)
-    fun loginFailed() {
+    fun login_Failed() {
         cloud = Cloud.instance()
         cloud.login("some@mail.ru", "aaa")
     }
 
     @Test
-    fun getFolder() {
+    fun getFolder_Existent() {
         val result = cloud.getFolder("/").execute().body()
         assertNotNull(result)
         assertNotNull(result!!.body)
+        assertEquals(FileType.folder, result.body.type)
+    }
+
+    @Test
+    fun getFolder_NonExistent() {
+        val result = cloud.getFile("/nonexistent_folder").execute().body()
+        assertNull(result)
+    }
+
+    @Test
+    fun getFile_Existent() {
+        val result = cloud.getFile(preExistingFile).execute().body()
+        assertNotNull(result)
+        assertNotNull(result!!.body)
+        assertEquals(FileType.file, result.body.type)
+    }
+
+    @Test
+    fun getFile_NonExistent() {
+        val result = cloud.getFile("/nonexistent_file").execute().body()
+        assertNull(result)
     }
 
     @Test
     fun addFolder() {
-        val resultAdd = cloud.addFolder("/test_folder").execute().body()
+        val resultAdd = cloud.addFolder("/test_folder_added").execute().body()
         assertNotNull(resultAdd)
-        assertEquals("/test_folder", resultAdd!!.body)
+        assertEquals("/test_folder_added", resultAdd!!.body)
 
-        val resultRemove = cloud.removeFile("/test_folder").execute().body()
+        val resultRemove = cloud.removeFile("/test_folder_added").execute().body()
         assertNotNull(resultRemove)
-        assertEquals("/test_folder", resultRemove!!.body)
+        assertEquals("/test_folder_added", resultRemove!!.body)
     }
 
     @Test
     fun uploadFile() {
-        val resultUpload = cloud.uploadFile("/test_file", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".toByteArray()).execute().body()
+        val resultUpload = cloud.uploadFile("/test_file_added", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".toByteArray()).execute().body()
         assertNotNull(resultUpload)
-        assertEquals("/test_file", resultUpload!!.body)
+        assertEquals("/test_file_added", resultUpload!!.body)
 
-        val resultRemove = cloud.removeFile("/test_file").execute().body()
+        val resultRemove = cloud.removeFile("/test_file_added").execute().body()
         assertNotNull(resultRemove)
-        assertEquals("/test_file", resultRemove!!.body)
+        assertEquals("/test_file_added", resultRemove!!.body)
     }
 
     @Test
-    fun uploadSmallFile() {
-        val resultUpload = cloud.uploadFile("/test_small_file", "aaa".toByteArray()).execute().body()
+    fun uploadFile_Small() {
+        val resultUpload = cloud.uploadFile("/test_small_file_added", "aaa".toByteArray()).execute().body()
         assertNotNull(resultUpload)
-        assertEquals("/test_small_file", resultUpload!!.body)
+        assertEquals("/test_small_file_added", resultUpload!!.body)
 
-        val resultRemove = cloud.removeFile("/test_small_file").execute().body()
+        val resultRemove = cloud.removeFile("/test_small_file_added").execute().body()
         assertNotNull(resultRemove)
-        assertEquals("/test_small_file", resultRemove!!.body)
+        assertEquals("/test_small_file_added", resultRemove!!.body)
     }
 }

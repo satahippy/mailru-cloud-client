@@ -3,6 +3,7 @@ package com.github.satahippy.mailru
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -16,6 +17,8 @@ class Cloud(inner: CloudApi, val cookieJar: MailruCookieJar) : CloudApi by inner
     private lateinit var requestInterceptor: MailruRequestInterceptor
 
     private lateinit var uploadUrl: String
+
+    private lateinit var downloadUrl: String
 
     companion object Factory {
         fun instance(): Cloud {
@@ -51,7 +54,7 @@ class Cloud(inner: CloudApi, val cookieJar: MailruCookieJar) : CloudApi by inner
                 Login = username,
                 Password = password,
                 act_token = actToken,
-                page = "https://cloud.mail.ru/?authid=k6sc8dts.pe&from=login&from-page=promo&from-promo=blue-2018",
+                page = "https://cloud.mail.ru/?from=login&from-page=promo&from-promo=blue-2018",
                 Domain = "mail.ru",
                 FromAccount = "opener=account&twoSteps=1",
                 new_auth_form = 1,
@@ -67,6 +70,8 @@ class Cloud(inner: CloudApi, val cookieJar: MailruCookieJar) : CloudApi by inner
                 ?: throw MailruException("Can't extract BUILD from login page")
         uploadUrl = searchUploadUrlOnLoginPage(html)
                 ?: throw MailruException("Can't extract upload url from login page")
+        downloadUrl = searchDownloadUrlOnLoginPage(html)
+                ?: throw MailruException("Can't extract download url from login page")
         requestInterceptor.email = username + "@mail.ru"
         requestInterceptor.logined = true
     }
@@ -119,8 +124,16 @@ interface CloudApi {
     @GET("folder?sort={\"type\":\"name\",\"order\":\"asc\"}&offset=0&limit=500")
     fun getFolder(@Query("home") home: String = "/"): Call<MailruResponse<FolderOrFile>>
 
-    @POST("folder/add?conflict=rename")
-    fun addFolder(@Query("home") home: String): Call<MailruResponse<String>>
+    @POST("folder/add")
+    fun addFolder(
+            @Query("home") home: String,
+            @Query("conflict") conflict: String = "rename"
+    ): Call<MailruResponse<String>>
+
+    @POST("file")
+    fun getFile(
+            @Query("home") home: String
+    ): Call<MailruResponse<FolderOrFile>>
 
     @POST("file/add")
     fun addFile(
@@ -130,5 +143,7 @@ interface CloudApi {
     ): Call<MailruResponse<String>>
 
     @POST("file/remove")
-    fun removeFile(@Query("home") home: String): Call<MailruResponse<String>>
+    fun removeFile(
+            @Query("home") home: String
+    ): Call<MailruResponse<String>>
 }
