@@ -92,6 +92,14 @@ class Cloud(inner: CloudApi, val cookieJar: MailruCookieJar) : CloudApi by inner
         return matcher.group(1)
     }
 
+    private fun searchDownloadUrlOnLoginPage(html: String): String? {
+        val matcher = Pattern.compile(""""([^"]+mail.ru/attach/)"""").matcher(html)
+        if (!matcher.find()) {
+            return null
+        }
+        return matcher.group(1)
+    }
+
     fun uploadFile(home: String, data: ByteArray): Call<MailruResponse<String>> {
         val size = data.size
         val hash = uploadFileHash(data)
@@ -108,6 +116,11 @@ class Cloud(inner: CloudApi, val cookieJar: MailruCookieJar) : CloudApi by inner
                 RequestBody.create(MediaType.parse("application/octet-stream"), data)
         ).execute().body() ?: throw MailruException("Can't upload file")
     }
+
+    fun downloadFile(home: String): Call<ResponseBody> {
+        val downloadFileUrl = downloadUrl + home
+        return internalDownloadFile(downloadFileUrl)
+    }
 }
 
 interface CloudApi {
@@ -121,8 +134,16 @@ interface CloudApi {
     @PUT
     fun internalUploadFile(@Url url: String, @Body bytes: RequestBody): Call<String>
 
-    @GET("folder?sort={\"type\":\"name\",\"order\":\"asc\"}&offset=0&limit=500")
-    fun getFolder(@Query("home") home: String = "/"): Call<MailruResponse<FolderOrFile>>
+    @GET
+    fun internalDownloadFile(@Url url: String): Call<ResponseBody>
+
+    @GET("folder")
+    fun getFolder(
+            @Query("home") home: String,
+            @Query("sort") sort: Sort = Sort(type = "name", order = "asc"),
+            @Query("offset") offset: Int = 0,
+            @Query("limit") limit: Int = 500
+    ): Call<MailruResponse<FolderOrFile>>
 
     @POST("folder/add")
     fun addFolder(

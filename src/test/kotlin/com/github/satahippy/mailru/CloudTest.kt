@@ -39,7 +39,7 @@ class CloudTest {
 
     @Test
     fun getFolder_NonExistent() {
-        val result = cloud.getFile("/nonexistent_folder").execute().body()
+        val result = cloud.getFolder("/nonexistent_folder").execute().body()
         assertNull(result)
     }
 
@@ -88,5 +88,18 @@ class CloudTest {
         val resultRemove = cloud.removeFile("/test_small_file_added").execute().body()
         assertNotNull(resultRemove)
         assertEquals("/test_small_file_added", resultRemove!!.body)
+    }
+
+    @Test
+    fun downloadFile_Existent() {
+        val result = cloud.downloadFile(preExistingFile).execute().body()
+        assertNotNull(result)
+        assertEquals(preExistingFileContent, result!!.string())
+    }
+
+    @Test
+    fun downloadFile_NonExistent() {
+        val result = cloud.downloadFile("/nonexistent_file").execute().body()
+        assertNull(result)
     }
 }
