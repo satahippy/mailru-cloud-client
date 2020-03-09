@@ -1,7 +1,7 @@
 import org.gradle.api.tasks.bundling.Jar
 
 group = "com.github.satahippy"
-version = "0.1.8"
+version = "0.2.0"
 
 buildscript {
     extra["kotlinVersion"] = "1.1.4"
@@ -51,7 +51,7 @@ val sourcesJar = task<Jar>("sourcesJar") {
 
 configure<PublishingExtension>() {
     publications {
-        create<MavenPublication>("publication") {
+        create<MavenPublication>("mailru-cloud-client") {
             from(components.getByName("java"))
             artifact(sourcesJar)
 
