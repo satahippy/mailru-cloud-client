@@ -1,6 +1,6 @@
 package com.github.satahippy.mailru
 
-import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -28,6 +28,8 @@ class Cloud(inner: CloudApi, val cookieJar: MailruCookieJar) : CloudApi by inner
             val client = OkHttpClient.Builder()
                     .cookieJar(cookieJar)
                     .addInterceptor(requestInterceptor)
+//                    To debug
+//                    .addNetworkInterceptor(HttpLoggingInterceptor().also { it.level = HttpLoggingInterceptor.Level.BODY })
                     .build()
 
             val retrofit = Retrofit.Builder()
@@ -72,7 +74,7 @@ class Cloud(inner: CloudApi, val cookieJar: MailruCookieJar) : CloudApi by inner
                 ?: throw MailruException("Can't extract upload url from login page")
         downloadUrl = searchDownloadUrlOnLoginPage(html)
                 ?: throw MailruException("Can't extract download url from login page")
-        requestInterceptor.email = username + "@mail.ru"
+        requestInterceptor.email = if (username.contains("@mail.ru")) username else username + "@mail.ru"
         requestInterceptor.logined = true
     }
 
@@ -113,7 +115,7 @@ class Cloud(inner: CloudApi, val cookieJar: MailruCookieJar) : CloudApi by inner
         }
         return internalUploadFile(
                 uploadUrl,
-                RequestBody.create(MediaType.parse("application/octet-stream"), data)
+                RequestBody.create("application/octet-stream".toMediaTypeOrNull(), data)
         ).execute().body() ?: throw MailruException("Can't upload file")
     }
 

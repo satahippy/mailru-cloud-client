@@ -1,7 +1,7 @@
 package com.github.satahippy.mailru
 
 import com.google.gson.GsonBuilder
-import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import retrofit2.Converter
 import retrofit2.Retrofit
@@ -17,7 +17,7 @@ class FormUrlEncodedConverterFactory : Converter.Factory() {
             retrofit: Retrofit
     ): Converter<*, RequestBody>? {
         if (!(type is Class<*>) || !FormUrlEncodedRequest::class.java.isAssignableFrom(type)) {
-            return null;
+            return null
         }
         return FormUrlEncodedConverter.INSTANCE
     }
@@ -26,7 +26,7 @@ class FormUrlEncodedConverterFactory : Converter.Factory() {
 class FormUrlEncodedConverter : Converter<FormUrlEncodedRequest, RequestBody> {
 
     companion object {
-        val MEDIA_TYPE = MediaType.parse("application/x-www-form-urlencoded")
+        val MEDIA_TYPE = "application/x-www-form-urlencoded".toMediaTypeOrNull()
         val INSTANCE = FormUrlEncodedConverter()
     }
 

@@ -25,9 +25,9 @@ class MailruRequestInterceptor : Interceptor {
             modifiedRequest
                     .header("X-CSRF-Token", csrf)
             modifiedRequest = modifiedRequest.url(
-                    originalRequest.url().newBuilder()
+                    originalRequest.url.newBuilder()
                             .let {
-                                if (originalRequest.url().encodedPath().contains("upload")) {
+                                if (originalRequest.url.encodedPath.contains("upload")) {
                                     it
                                             .addQueryParameter("cloud_domain", "2")
                                             .addQueryParameter("x-email", email)

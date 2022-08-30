@@ -9,17 +9,15 @@ class MailruCookieJar : CookieJar {
 
     val cookies = ArrayList<Cookie>()
 
-    override fun loadForRequest(url: HttpUrl?): MutableList<Cookie> {
+    override fun loadForRequest(url: HttpUrl): List<Cookie> {
         return cookies
     }
 
-    override fun saveFromResponse(url: HttpUrl?, cookiesFromResponse: MutableList<Cookie>?) {
-        if (cookiesFromResponse != null) {
-            cookies.addAll(cookiesFromResponse)
-        }
+    override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+        this.cookies.addAll(cookies)
     }
 
     fun getActToken(): String? {
-        return cookies.find { it.name() == "act" }?.value()
+        return cookies.find { it.name == "act" }?.value
     }
 }
